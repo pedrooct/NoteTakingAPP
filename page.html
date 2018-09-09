@@ -1,0 +1,77 @@
+
+<html lang="pt-PT">
+<head>
+  <link rel="stylesheet" type="text/css" href="./style/style.css">
+  <title>Note Taking</title>
+</head>
+<body>
+  <form>
+    <h1>Titulo:</h1>
+    <input id='titulo' name="titulo"  type="Text">
+    <h1>Nota:</h1>
+    <textarea id='nota' name="nota"  type="Text" placeholder="empty">
+    </textarea>
+    <input name="send"  type="submit"  value="Guardar!">
+  </form>
+  <div style=" position: relative; float: left; margin-left: 600px; bottom: 500px;">
+    <h1>Notas:</h1>
+    <ul style="list-style-type: none;margin-bottom: 0px;">
+
+    </ul>
+  </div>
+
+
+  <script>
+  const electron = require('electron');
+  const {ipcRenderer} = electron;
+  const form = document.querySelector('form');
+  const ul= document.querySelector('ul');
+  form.addEventListener('submit',submitNote);
+
+  function submitNote(e){
+    e.preventDefault();
+    var title = document.querySelector('#titulo').value;
+    if (title.trim()) {
+      title=title.trim();
+    }
+    else {
+      title ="Titulo vazio";
+    }
+    const note = document.querySelector('#nota').value;
+    ipcRenderer.send('note:add',title,note);
+  }
+  ipcRenderer.on('note:list',function(e,notes){
+    ul.innerHTML="";
+    for (x in notes){
+      var h2= document.createElement('h2');
+      var li= document.createElement('li');
+      var input= document.createElement('input');
+      input.setAttribute("type","submit");
+      input.setAttribute("id",notes[x].id);
+      input.setAttribute("style", "width: 150px; font-size:20px; height: 30px");
+      input.setAttribute("value","Apagar ?");
+      input.addEventListener("click", removeNote);
+      var itemTitulo= document.createTextNode(notes[x].titulo)
+      var itemNota= document.createTextNode(notes[x].nota);
+      h2.appendChild(itemTitulo),
+      li.appendChild(itemNota);
+      ul.appendChild(h2);
+      ul.appendChild(li);
+      ul.appendChild(input);
+    }
+  });
+
+  function removeNote(e)
+  {
+    e.preventDefault();
+    id = e.target.id ;
+    ipcRenderer.send('note:remove',id);
+  }
+
+</script>
+
+<div class="footer">
+  © 2018! Made By Pedro Oct Costa !!
+</div>
+</body>
+</html>
